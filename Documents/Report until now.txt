@@ -1,0 +1,64 @@
+What each paper is useful for:
+1. Markkula et al. (2020) - mutual influence when two users may occupy the same space; a good way to define “interaction episodes” in data
+2. Ji & Levinson (2020) - review of lane-change/merge games (Nash, sequential, incomplete info)
+3. Yao & Du (2022) - driving styles/incomplete information
+4. Li et al. (2026) - social preferences in AV–human interaction
+5. Stange et al. (2022) - humans change behavior with repeated AV exposure (field: how many times has the person done the test)
+
+Questions:
+How do we identify interaction episodes in the data?
+Which players, actions, and timing best describe the scenario?
+Which game formulation fits best (theory + data)?
+What interaction patterns actually occur?
+How well does the chosen model explain outcomes?
+
+Things to clarify:
+(1. Data format & contents
+	a.What file format will data be in?
+	b.Sampling rate and time sync across vehicles?
+	c.Coordinate system and units?
+	d.Is there a data dictionary or schema already?) - answered in call, can be updated 
+
+2. What is collected so far?
+	a.Per vehicle: position, speed, acceleration, lane, steering, indicator? - yes
+	b.AV: automation state, planned maneuver, scenario triggers? - no
+	c.Humans: emotion measures - which signals, when, how synced to driving? -answered in call
+	d.Trial/scenario IDs, repetitions, condition variations? - its variable
+	c.Event markers (merge start, lane end, conflict, near-miss)? - not really marked in the experiment, can be marked when processing the data if needed
+
+(3. Previous theses/simpler scenarios
+	a.Which past student theses used this simulator or similar setups?
+	b.What was simpler about those scenarios (e.g. two vehicles only, no mandatory merge)?
+	c.What models/methods did they use - any you recommend I build on or extend?
+	d.Any example datasets or analysis scripts I could look at?) - not finished and should be independent
+
+4. Scenario details
+	a. Exact layout: where is HDV_L relative to AV - answered in call, variable
+	b. Is HDV_R always present? Can it change lane? - not really relevant
+	c. What does the AV control - full merge strategy or fixed script? - we focus on the HDV so not really relevant
+	d. How many trials/participants expected? - 
+
+Data I would like to have:
+1. Geometry & motion
+	a.gaps (front, left, rear) -  from the HDV perspective
+	b.relative speeds - yes
+	c.distance to lane end - no
+	d.braking distance - can be calculated
+	e.lane width - yes, static
+	f.ramp dimensions - yes, static
+2. Safety
+	a.time to collision - can be calculated
+	b.minimum safe gap - can be calculated
+	c.harsh braking/near-conflict events - can be defined and calculated
+(3. Efficiency
+	a.delay
+	b.successful merge before lane ends
+	c.speed loss) - not concrete enough to quantify, left out
+4. Human factors
+	a.emotion (stress) - yes
+	b.inferred cooperation tendency - will be inferred
+	c.reaction time - yes, can be incorporated into experiment
+5. Communication
+	a.indicator on/off - yes
+	b.early vs late deceleration - can be spotted
+	c.visible lateral movement (maybe eye movement of driver) - yes, eye tracker

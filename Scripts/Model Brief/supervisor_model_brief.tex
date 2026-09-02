@@ -1,0 +1,438 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+\title{Modelling Human Driver Responses During an AV-Led Mandatory Merge}
+\author{Angel Barov \quad Supervisor: Tianyu Tang}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+
+\section{Research focus}
+
+The experiment contains three vehicles:
+
+\begin{itemize}[noitemsep]
+  \item \textbf{A:} automated vehicle (AV) in the ending lane;
+  \item \textbf{L:} human-driven vehicle in the left target lane;
+  \item \textbf{R:} human-driven vehicle behind A.
+\end{itemize}
+
+The thesis focuses on predicting and explaining the responses of L and R. It does not aim to design an AV controller.
+
+The main predictions are:
+
+\begin{itemize}[noitemsep]
+  \item whether L yields or continues in lane;
+  \item whether R brakes or maintains speed;
+  \item how the responses develop during the merge;
+  \item whether stress and repeated exposure are associated with different driver profiles.
+\end{itemize}
+
+\section{Three proposed models}
+
+The study will focus on three model families:
+
+\begin{enumerate}
+  \item \textbf{Game-theoretic model:} two pairwise games as baselines, followed by a full three-player game.
+  \item \textbf{Hidden Markov Model:} a sequential model of hidden behavioral phases within a merge.
+  \item \textbf{Latent stress-adaptation model:} an abstract model of behavioral profiles that may change across repeated AV encounters.
+\end{enumerate}
+
+The models answer different questions. The game model explains decisions through competing costs. The HMM describes how behavior changes over time within an interaction. The latent profile model describes differences between drivers and possible changes across repeated trials.
+
+\section{Model 1: game-theoretic decision model}
+
+\subsection{What makes it a game}
+
+A game contains:
+
+\begin{enumerate}[noitemsep]
+  \item players who make decisions;
+  \item actions available to each player;
+  \item costs associated with each combination of actions;
+  \item a rule for predicting which actions will be chosen.
+\end{enumerate}
+
+The AV acts first by signalling, changing speed, or beginning the merge. The human drivers observe this behavior and choose their responses. This gives a sequential structure:
+
+\begin{equation}
+\text{observed AV action}
+\longrightarrow
+\text{human response decision}.
+\end{equation}
+
+If the AV follows one fixed script, its behavior is treated as an observed first move rather than an AV strategy that the thesis must optimize. If the experiment includes several AV strategies, their effects can be modelled explicitly.
+
+\subsection{Two two-player baseline games}
+
+The first baseline separates the three-vehicle situation into two simpler games.
+
+\subsubsection{Game A--L}
+
+Players:
+
+\begin{itemize}[noitemsep]
+  \item A, which performs the mandatory merge;
+  \item L, which responds from the target lane.
+\end{itemize}
+
+Initial human actions:
+
+\begin{equation}
+a_L\in\{\text{Yield},\text{Continue}\}.
+\end{equation}
+
+This game predicts whether L creates space for A or maintains its current position and speed.
+
+\subsubsection{Game A--R}
+
+Players:
+
+\begin{itemize}[noitemsep]
+  \item A, which may signal, slow down, and move laterally;
+  \item R, which follows A in the ending lane.
+\end{itemize}
+
+Initial human actions:
+
+\begin{equation}
+a_R\in\{\text{Brake},\text{Maintain}\}.
+\end{equation}
+
+This game predicts whether R opens the following gap or maintains its current speed.
+
+These pairwise games are useful baselines because they are easier to estimate. They test whether each human response can be explained using only the human and the AV.
+
+\subsection{Example cost structure}
+
+For player $i$ and candidate action $a$, an example cost is:
+
+\begin{equation}
+C_i(a)
+=
+w_{s,i}S_i(a)
++
+w_{e,i}E_i(a)
++
+w_{c,i}K_i(a)
++
+\underbrace{w_{I,i}I_i(a)}_{\text{optional}}.
+\end{equation}
+
+The components are:
+
+\begin{itemize}[noitemsep]
+  \item $S_i(a)$: safety cost;
+  \item $E_i(a)$: efficiency cost, such as speed or time lost;
+  \item $K_i(a)$: comfort cost, such as strong acceleration or braking;
+  \item $I_i(a)$: optional interaction cost, such as leaving an insufficient merge gap;
+  \item $w_{s,i},w_{e,i},w_{c,i},w_{I,i}$: weights describing the importance of each component.
+\end{itemize}
+
+A lower value means that the action is less costly and therefore more attractive.
+
+\textbf{The formulas below are only examples.} They show how the model could be constructed, but they are not final definitions. They can be replaced after the dataset, vehicle geometry, and signal quality have been examined.
+
+\subsubsection{Example safety cost}
+
+One possible safety cost is inverse time to collision:
+
+\begin{equation}
+S_i(a)
+=
+\frac{1}{\max(\mathrm{TTC}_i(a),\varepsilon)}.
+\end{equation}
+
+Small TTC produces a large safety cost. If TTC is not suitable for a specific vehicle arrangement, it can be replaced by projected minimum gap, time headway, or required braking.
+
+\subsubsection{Example efficiency cost}
+
+One possible efficiency cost is the squared loss of speed:
+
+\begin{equation}
+E_i(a)
+=
+\left(v_i^{\mathrm{desired}}-v_i^{\mathrm{after}}(a)\right)^2.
+\end{equation}
+
+This expresses that braking or yielding may reduce efficiency. Other possible definitions include delay, time spent below desired speed, or distance lost.
+
+\subsubsection{Example comfort cost}
+
+One possible comfort cost is the magnitude of the required acceleration:
+
+\begin{equation}
+K_i(a)=|a_i(a)|.
+\end{equation}
+
+Strong acceleration or braking gives a larger comfort cost. This formula can later be replaced by a measure that better matches the available data.
+
+\subsubsection{Optional interaction cost}
+
+The interaction term can be included only if it adds a clear and measurable concept that is not already captured by safety and efficiency. For example:
+
+\begin{equation}
+I_L(a)
+=
+\begin{cases}
+0, & \text{if L creates a sufficient merge gap},\\
+1, & \text{if L leaves an insufficient merge gap}.
+\end{cases}
+\end{equation}
+
+This is an example definition. The term should be removed if it duplicates the safety cost or cannot be measured reliably. It should not be interpreted as a direct measurement of kindness or intention.
+
+\subsection{Decision from the cost}
+
+The simplest model predicts that a player selects the lowest-cost action:
+
+\begin{equation}
+a_i^*
+=
+\underset{a}{\operatorname{argmin}}\;C_i(a).
+\end{equation}
+
+For example:
+
+\begin{equation}
+\text{predict Yield if }
+C_L(\mathrm{Yield})<C_L(\mathrm{Continue}).
+\end{equation}
+
+This deterministic rule is easy to interpret, but human decisions are not perfectly consistent.
+
+\subsection{Probabilistic human choice}
+
+A more realistic model converts costs into action probabilities:
+
+\begin{equation}
+P_i(a)
+=
+\frac{\exp[-\alpha_i C_i(a)]}
+{\sum_b\exp[-\alpha_i C_i(b)]}.
+\end{equation}
+
+The parameter $\alpha_i$ describes how consistently the player chooses the lowest-cost action:
+
+\begin{itemize}[noitemsep]
+  \item small $\alpha_i$: choices are more variable;
+  \item large $\alpha_i$: the lowest-cost action is selected more consistently.
+\end{itemize}
+
+Human factors may influence $\alpha_i$. A simple conceptual form is:
+
+\begin{equation}
+\alpha_i
+=
+f(\text{stress},\text{AV exposure},\text{reaction-time history}).
+\end{equation}
+
+For example, stress may make choices less consistent, while repeated exposure may make the AV more predictable. The direction should be estimated from the data rather than assumed.
+
+Only information available before the predicted decision should be used. Therefore, ``reaction-time history'' means reaction time from earlier trials. If the model is updated during the current trial, elapsed time up to the present moment may also be used. The final reaction time of the current decision must not be used to predict that same decision.
+
+Human factors could alternatively influence the cost weights. For example, a more cautious driver profile may assign a larger weight to safety.
+
+\subsection{Full three-player game}
+
+The main game-theoretic model will attempt to represent A, L, and R together:
+
+\begin{equation}
+\mathcal{G}=\{A,L,R\}.
+\end{equation}
+
+Each player has a cost that depends on the full combination of actions:
+
+\begin{align}
+C_A &= C_A(a_A,a_L,a_R),\\
+C_L &= C_L(a_L,a_A,a_R),\\
+C_R &= C_R(a_R,a_A,a_L).
+\end{align}
+
+This model can represent links that the pairwise games omit. For example:
+
+\begin{enumerate}[noitemsep]
+  \item L opens or closes the target-lane gap;
+  \item this affects how A performs the merge;
+  \item A's resulting speed change affects the following risk for R.
+\end{enumerate}
+
+The full model will be compared with the two pairwise baselines. It is useful only if it improves prediction and if the data show that the three vehicles influence one another. If the AV has only one fixed behavior and does not adapt, the model should be described as a joint human-response model rather than a complete three-player equilibrium.
+
+\section{Model 2: Hidden Markov Model}
+
+\subsection{Purpose}
+
+The game model predicts which action has the lowest expected cost. An HMM addresses a different question: which hidden behavioral phase is the interaction currently in?
+
+Possible hidden phases are:
+
+\begin{equation}
+\text{Approach}
+\longrightarrow
+\text{Anticipation}
+\longrightarrow
+\text{Yield, Continue, or Conflict}
+\longrightarrow
+\text{Resolution}.
+\end{equation}
+
+The phases are hidden because they are not labelled directly in the recorded data. They are inferred from observations such as:
+
+\begin{itemize}[noitemsep]
+  \item speed and acceleration;
+  \item gaps and relative speed;
+  \item AV indicator and lateral movement;
+  \item human Yield, Continue, Brake, or Maintain actions;
+  \item stress, if synchronized reliably.
+\end{itemize}
+
+\subsection{How it works}
+
+The model assumes that the current hidden phase mainly depends on the previous phase:
+
+\begin{equation}
+P(z_t\mid z_{t-1}).
+\end{equation}
+
+Each phase has a characteristic pattern of observable data:
+
+\begin{equation}
+P(\text{observations at }t\mid z_t).
+\end{equation}
+
+The HMM estimates:
+
+\begin{itemize}[noitemsep]
+  \item the probability of moving from one phase to another;
+  \item the observations normally associated with each phase;
+  \item the most likely phase sequence for each merge.
+\end{itemize}
+
+\subsection{Why it may be useful}
+
+The HMM can:
+
+\begin{itemize}[noitemsep]
+  \item divide continuous trajectories into recurring phases;
+  \item reveal common action sequences;
+  \item compare how quickly different drivers move from anticipation to action;
+  \item provide a sequential baseline that does not assume strategic cost minimization.
+\end{itemize}
+
+Its main limitation is that it describes temporal patterns but does not by itself explain why one action is strategically preferable. Hidden states are statistical patterns, not direct measurements of intention.
+
+\section{Model 3: latent stress-adaptation model}
+
+\subsection{Purpose}
+
+This model focuses on more abstract human factors. It asks whether stress, repeated exposure, and previous interaction outcomes are associated with different behavioral profiles.
+
+At exposure $e$, participant $p$ has an unobserved profile:
+
+\begin{equation}
+z_{p,e}
+\in
+\{\text{Profile 1},\text{Profile 2},\text{Profile 3}\}.
+\end{equation}
+
+The profiles should initially have neutral names. After fitting, the observed behavior may support descriptions such as:
+
+\begin{itemize}[noitemsep]
+  \item cautious or stressed;
+  \item balanced or adaptive;
+  \item assertive or habituated.
+\end{itemize}
+
+These labels describe behavioral patterns. They are not evidence of fixed personality traits.
+
+\subsection{Changing profile across exposures}
+
+The probability of the current profile can depend on:
+
+\begin{equation}
+\begin{aligned}
+P(\text{current profile})=f(&\text{previous profile},\text{ stress},\text{ exposure},\\
+                            &\text{previous outcome},\text{ previous reaction time}).
+\end{aligned}
+\end{equation}
+
+This allows a participant to move between profiles. For example, repeated predictable encounters may be associated with lower stress and a more confident response pattern. A difficult previous encounter may instead be associated with a more cautious next response.
+
+These are hypotheses to test. The model must not assume in advance that exposure always reduces stress or makes drivers more assertive.
+
+\subsection{Abstract baseline and connection to the game}
+
+The latent stress-adaptation model can first be used as an abstract baseline using:
+
+\begin{itemize}[noitemsep]
+  \item pre-decision stress;
+  \item exposure number;
+  \item previous outcome;
+  \item previous human action;
+  \item previous reaction time;
+  \item gaze or attention, if reliable.
+\end{itemize}
+
+It deliberately excludes physical variables such as TTC and gap. This tests how much can be predicted from human factors and interaction history alone.
+
+The latent profile can then be connected to the game model. Different profiles may have different cost weights or different $\alpha$ values:
+
+\begin{equation}
+\text{profile}
+\longrightarrow
+\{w_s,w_e,w_c,w_I,\alpha\}
+\longrightarrow
+\text{action probability}.
+\end{equation}
+
+For example, a cautious profile may give greater weight to safety, while an efficiency-oriented profile may give greater weight to maintaining speed.
+
+\subsection{Why it may be useful}
+
+This model can:
+
+\begin{itemize}[noitemsep]
+  \item separate temporary stress from more stable differences between participants;
+  \item test whether profiles change across repeated AV encounters;
+  \item provide a human-factor baseline for the physical game model;
+  \item help explain why drivers facing similar traffic conditions choose different actions.
+\end{itemize}
+
+Its main limitations are:
+
+\begin{itemize}[noitemsep]
+  \item stress must be measured before the decision if it is used as a predictor;
+  \item enough repeated trials are required to estimate profile changes;
+  \item profile names must follow from the results;
+  \item the model cannot prove that a participant's real personality changed.
+\end{itemize}
+
+\section{How the three models relate}
+
+The proposed analysis has a clear progression:
+
+\begin{enumerate}
+  \item Fit the two pairwise games A--L and A--R as understandable baselines.
+  \item Fit the full A--L--R game and test whether joint interaction improves human-response prediction.
+  \item Fit an HMM to identify recurring behavioral phases within each merge.
+  \item Fit the latent stress-adaptation model across repeated trials.
+  \item Test whether latent profiles improve the game model by changing its weights or choice-consistency parameter.
+\end{enumerate}
+
+The three models are complementary:
+
+\begin{itemize}[noitemsep]
+  \item game theory explains choices through costs and strategic dependence;
+  \item the HMM explains the temporal sequence within an interaction;
+  \item the latent stress-adaptation model explains abstract driver differences and changes across exposures.
+\end{itemize}
+
+The full three-player game is the intended main model. The two pairwise games provide a simpler baseline. The HMM and latent stress-adaptation model provide alternative and complementary descriptions of human behavior.
+
+\end{document}

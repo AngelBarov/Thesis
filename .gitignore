@@ -1,0 +1,17 @@
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Word lock files
+~$*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store

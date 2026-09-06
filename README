@@ -1,0 +1,19 @@
+This repo is structured in the following way:
+
+1. Documents:
+All documents sent/shown to supervisor, including:
+1.1 Latest Expose version.
+1.2 Questions before and answers after first online meeting.
+1.3 Update file with the chosen three models, how they work and what they explain.
+
+2. Guidelines:
+Guidelines sent by the supervisor on how to better write academic texts.
+
+3. Papers:
+All relevant papers either sent by supervisor or compiler by thesis author until now.
+
+4. Scripts:
+Script for report generation, calculation, data management and more.
+Currently only includes:
+4.1 Script for compiling a .tex document to .pdf for the model brief document.
+4.2 Script skeleton for the game theory model

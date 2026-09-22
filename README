@@ -17,3 +17,8 @@ Script for report generation, calculation, data management and more.
 Currently only includes:
 4.1 Script for compiling a .tex document to .pdf for the model brief document.
 4.2 Script skeleton for the game theory model
+
+5. Visualization:
+Mock-ups of how the results of the three models can be presented, with an index
+(README.md) describing what each figure reports and what data it needs.
+All figures use invented numbers and are layout proposals only.

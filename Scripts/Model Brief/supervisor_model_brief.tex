@@ -68,6 +68,31 @@ The AV acts first by signalling, changing speed, or beginning the merge. The hum
 
 If the AV follows one fixed script, its behavior is treated as an observed first move rather than an AV strategy that the thesis must optimize. If the experiment includes several AV strategies, their effects can be modelled explicitly.
 
+\subsection{What kind of game this is}
+
+The game is non-cooperative. The drivers cannot talk to one another, or to the AV, before the merge, and nothing forces them to keep an agreement. Each player acts to reduce their own cost.
+
+Play is sequential and can run for several stages. The AV moves first. L and R respond, and a response can change the gaps and speeds enough that another decision becomes available. The number of stages is not fixed in advance. It depends on the actions: the interaction continues while a player still has a response to make, and it ends when the merge is resolved. The first estimated models can still score one response at a time. The stage structure is what links those responses.
+
+Information is incomplete for every player, not only for one of them. A driver does not know another road user's cost weights. Each driver instead holds a prior belief, and those priors can differ. A belief can be revised as the stages proceed. Two revision rules should be kept apart, because they answer different questions:
+
+\begin{itemize}[noitemsep]
+  \item Bayesian updating revises the prior belief about what kind of driver the other road user is. Within one merge there is little repeated evidence about a stable type, so this update is expected to be infrequent.
+  \item Behavioral updating revises what the driver expects the other to do next, after a move has been seen, during the current merge. This is the more feasible rule for these data. How that revision should be calculated is still an open question.
+\end{itemize}
+
+A round effect sits outside a single merge. The first encounter with the AV may change the decision in the next encounter, for example through the exposure term already allowed in $\alpha_i$, or through the latent profile in Section~\ref{sec:latent}. That is an effect across trials, not an update inside one interaction.
+
+The same interaction can be read in three ways, and they should be compared rather than combined without comment:
+
+\begin{enumerate}[noitemsep]
+  \item a perfect-information game, in which previous moves are observed and the costs are treated as known;
+  \item a Bayesian game, in which the cost weights are hidden and a prior belief stands in for them;
+  \item a behavioral game, in which the driver follows the probabilistic choice rule of Section~\ref{sec:behavioral} rather than the lowest cost on every occasion.
+\end{enumerate}
+
+A sequential game that combines hidden costs with beliefs updated along the path is a perfect Bayesian game. Whether the recordings support that solution, or only the behavioral rule with observed moves, is a comparison rather than an assumption.
+
 \subsection{Two two-player baseline games}
 
 The first baseline separates the three-vehicle situation into two simpler games.
@@ -207,6 +232,7 @@ C_L(\mathrm{Yield})<C_L(\mathrm{Continue}).
 This deterministic rule is easy to interpret, but human decisions are not perfectly consistent.
 
 \subsection{Probabilistic human choice}
+\label{sec:behavioral}
 
 A more realistic model converts costs into action probabilities:
 
@@ -328,6 +354,7 @@ The HMM can:
 Its main limitation is that it describes temporal patterns but does not by itself explain why one action is strategically preferable. Hidden states are statistical patterns, not direct measurements of intention.
 
 \section{Model 3: latent stress-adaptation model}
+\label{sec:latent}
 
 \subsection{Purpose}
 

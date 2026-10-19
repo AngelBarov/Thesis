@@ -1,8 +1,14 @@
 # Visualisation ideas for the thesis results
 
-Eleven figure mock-ups for the three models in
-`Documents/supervisor_model_brief.pdf`: one shared scenario figure, three per
-model, and one comparison figure.
+Eleven figure mock-ups for the three models in the supervisor brief: one shared
+scenario figure, three per model, and one comparison figure.
+
+Regenerate them with `python "Scripts/Visualization/generate_figures.py"`.
+The scripts always write into this folder.
+
+Slide pictures of how a decision is made, rather than result graphs, are in
+`presentation/`. Regenerate those with
+`python "Scripts/Visualization/presentation.py"`.
 
 **All numbers are invented.** These are layouts, not results. Each figure carries
 a grey footnote saying so. Sized for the brief's A4 text width (6.3 in).

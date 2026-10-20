@@ -159,6 +159,8 @@ Rabiner, L. R. (1989). HMM tutorial. Proc. IEEE, 77(2), 257–286.
 
 ## Related files in repo
 
+- `Scripts/Game Theory/cost_terms.py` — candidate formulas for each cost component
+- `Scripts/HMM/` — diagonal-Gaussian HMM building blocks (reference model only)
 - `Scripts/Model Brief/supervisor_model_brief.md` — full maths and cost-function detail
 - `Scripts/Model Brief/supervisor_model_brief.tex` / `.pdf` — compiled brief for supervisor
 - `Documents/Expose.docx` — exposé draft

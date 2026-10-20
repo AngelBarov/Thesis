@@ -64,8 +64,12 @@ class TrialData:
     gaze_features: dict[str, Any] = field(default_factory=dict)
 
     extra: dict[str, Any] = field(default_factory=dict)
-    """Derived features not yet modelled explicitly, such as the projected
-    speed, acceleration, or gap under each candidate action."""
+    """Derived features.
+
+    Action-conditional inputs for the cost candidates live at
+    ``extra["projected"][player][action][key]``, using the enum values
+    (``"L"``, ``"Yield"``). The keys are ``cost_terms.PROJECTED_KEYS``.
+    """
 
     def reaction_time(self, side: str = "left") -> float | None:
         """Response time minus AV cue time, for ``left`` or ``rear``."""

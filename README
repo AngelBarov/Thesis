@@ -16,7 +16,8 @@ All relevant papers either sent by supervisor or compiler by thesis author until
 Script for report generation, calculation, data management and more.
 Currently only includes:
 4.1 Script for compiling a .tex document to .pdf for the model brief document.
-4.2 Script skeleton for the game theory model
+4.2 Scripts/Game Theory — decision model. Swappable cost formulas are in cost_terms.py (see the folder README).
+4.3 Scripts/HMM — phase model for one merge, reference only (see the folder README).
 
 5. Visualization:
 Mock-ups of how the results of the three models can be presented, with an index

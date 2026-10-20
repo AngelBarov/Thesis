@@ -32,8 +32,18 @@ fixed before anything is computed.
 
 ![game tree](02_game_tree.png)
 
-The game tree with fitted costs at the leaves and probabilities on the edges.
-Shows the model is a game, not a regression.
+Example tree for driver L, with every path from the HMM phase chain.
+Approach leads to Anticipation, where L's situation becomes Yield, Continue,
+or Conflict. Each of those three ends in Resolution. The probability is on
+the branch and L's cost is in the box.
+
+### Game tree, extra
+
+![game tree extra](game_tree_extra.png)
+
+The same chain for L, drawn out: where a trial can start, the chance of staying
+in a phase, the per-step exit, what is observed, and a Resolution ending on
+Yield, Continue, and Conflict. This file is the figure itself.
 
 ### 03 — Cost decomposition
 
@@ -53,6 +63,9 @@ top. Agreement shows as circles clustering in the blue region.
 ---
 
 ## Model 2 — Hidden Markov Model
+
+Figure 02 draws the same chain: Approach, Anticipation, then Yield, Continue,
+or Conflict, and Resolution at the end of each.
 
 ### 05 — Phase transitions
 

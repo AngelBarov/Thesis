@@ -12,6 +12,12 @@ from .costs import (
     calculate_costs_for_actions,
     expected_cost,
 )
+from .cost_terms import (
+    MissingCostFeature,
+    PROJECTED_KEYS,
+    available_terms,
+    compose,
+)
 from .data import TrialData, VehicleKinematics
 from .decision import (
     action_probabilities,
@@ -45,6 +51,8 @@ __all__ = [
     "CostTermFn",
     "CostTermFunctions",
     "CostWeights",
+    "MissingCostFeature",
+    "PROJECTED_KEYS",
     "JointAction",
     "PairwiseGame",
     "ParameterEstimator",
@@ -54,7 +62,9 @@ __all__ = [
     "TrialData",
     "VehicleKinematics",
     "action_probabilities",
+    "available_terms",
     "calculate_cost",
+    "compose",
     "calculate_costs_for_actions",
     "expected_cost",
     "game_al",

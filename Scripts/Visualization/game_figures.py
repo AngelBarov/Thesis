@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 from matplotlib.patches import FancyBboxPatch, Polygon, Rectangle
 
-from common import C, FIGW, save, sigmoid, style
+from common import C, FIGW, PHASE_COLORS, save, sigmoid, style
 
 import matplotlib.pyplot as plt
 
@@ -77,54 +77,126 @@ def scenario():
     save(fig, "01_scenario_schematic.png", "Schematic only - final version should use measured lane geometry")
 
 
-def game_tree():
-    fig, ax = plt.subplots(figsize=(FIGW, 3.1))
-    leaves = [
-        ("Brake", 0.90, (1.82, 2.41), 0.34),
-        ("Maintain", 0.66, (1.95, 2.68), 0.21),
-        ("Brake", 0.34, (2.61, 2.12), 0.27),
-        ("Maintain", 0.10, (2.88, 3.35), 0.18),
-    ]
-    ax.plot([0.10, 0.34], [0.5, 0.5], color="0.35", lw=1.2)
-    ax.plot(0.10, 0.5, "s", color=C["A"], ms=7)
-    ax.text(0.10, 0.60, "A", ha="center", fontsize=9.5, color=C["A"], fontweight="bold")
-    ax.text(0.10, 0.40, "observed\nfirst move", ha="center", va="top", fontsize=7, color="0.4")
-    ax.text(
-        0.22, 0.52, "signal / decelerate / merge", ha="center", fontsize=7, color="0.35",
-        bbox=dict(boxstyle="round,pad=0.15", facecolor="white", edgecolor="none"),
+def _chip(ax, x, y, w, h, label, face, edge="0.35"):
+    ax.add_patch(
+        FancyBboxPatch(
+            (x - w / 2, y - h / 2),
+            w,
+            h,
+            boxstyle="round,pad=0.02,rounding_size=0.1",
+            facecolor=face,
+            edgecolor=edge,
+            linewidth=0.9,
+            zorder=3,
+        )
     )
-    ax.plot(0.34, 0.5, "o", color=C["L"], ms=7)
-    ax.text(0.34, 0.60, "L", ha="center", fontsize=9.5, color=C["L"], fontweight="bold")
+    ax.text(x, y, label, ha="center", va="center", fontsize=8, color="0.12", zorder=4)
 
-    for y_l, name, p_l in [(0.78, "Yield", 0.55), (0.22, "Continue", 0.45)]:
-        ax.plot([0.34, 0.58], [0.5, y_l], color=C["L"], lw=1.2)
+
+def _outcome(ax, x, y, w, h, action, detail, cost, face, edge):
+    """One HMM scenario, and the Resolution ending every scenario shares."""
+    ax.add_patch(
+        FancyBboxPatch(
+            (x - w / 2, y - h / 2),
+            w,
+            h,
+            boxstyle="round,pad=0.02,rounding_size=0.1",
+            facecolor=face,
+            edgecolor=edge,
+            linewidth=1.0,
+            zorder=3,
+        )
+    )
+    ax.text(x, y + 0.48, action, ha="center", va="center", fontsize=8.5, color="0.12", fontweight="bold", zorder=4)
+    ax.text(x, y + 0.14, detail, ha="center", va="center", fontsize=6.9, color="0.25", zorder=4)
+    ax.text(x, y - 0.20, "outcome: Resolution", ha="center", va="center", fontsize=7.2, color="#3d5c38", zorder=4)
+    ax.text(x, y - 0.50, f"$C_L = {cost:.2f}$", ha="center", va="center", fontsize=7.1, color="0.2", zorder=4)
+
+
+def game_tree():
+    """Example tree for L covering every path in the HMM phase chain.
+
+    Approach, then Anticipation, then Yield, Continue, or Conflict.
+    Each of those three ends in Resolution.
+    """
+    fig, ax = plt.subplots(figsize=(FIGW, 4.55))
+    ax.set_xlim(0, 12.2)
+    ax.set_ylim(0, 8.75)
+
+    approach_x, decide_x, mid_y = 1.45, 4.25, 4.35
+    _chip(ax, approach_x, mid_y, 2.05, 0.85, "Approach", PHASE_COLORS["Approach"])
+    _chip(ax, decide_x, mid_y, 2.45, 0.85, "Anticipation", PHASE_COLORS["Anticipation"], "#b08a2e")
+    ax.annotate(
+        "",
+        xy=(decide_x - 1.22, mid_y),
+        xytext=(approach_x + 1.02, mid_y),
+        arrowprops=dict(arrowstyle="-|>", color="0.35", lw=1.1),
+        zorder=1,
+    )
+    ax.text(
+        (approach_x + decide_x) / 2,
+        mid_y + 0.62,
+        "AV cue",
+        ha="center",
+        va="center",
+        fontsize=7,
+        color="0.35",
+        zorder=5,
+        bbox=dict(boxstyle="round,pad=0.12", facecolor="white", edgecolor="none"),
+    )
+    ax.text(decide_x, mid_y + 0.68, "L", ha="center", va="bottom", fontsize=9, color=C["L"], fontweight="bold")
+
+    box_w, box_h, box_x = 4.35, 1.55, 9.7
+    box_left = box_x - box_w / 2
+    decide_right = decide_x + 1.22
+    branches = [
+        (6.85, "Yield", 0.52, 1.82, "AV merges into the opened gap", PHASE_COLORS["Yield"], "#2c6b9e"),
+        (4.35, "Continue", 0.33, 2.41, "L holds while the AV waits", PHASE_COLORS["Continue"], "#c05a2c"),
+        (1.85, "Conflict", 0.15, 3.35, "the gap is contested, then clears", PHASE_COLORS["Conflict"], "#a85a5a"),
+    ]
+    for y, action, probability, cost, detail, face, edge in branches:
+        ax.annotate(
+            "",
+            xy=(box_left, y),
+            xytext=(decide_right, mid_y),
+            arrowprops=dict(arrowstyle="-|>", color=edge, lw=1.1, shrinkA=2, shrinkB=4),
+            zorder=1,
+        )
+        if y == mid_y:
+            label_x = decide_right + 0.62 * (box_left - decide_right)
+            label_y = mid_y + 0.42
+        else:
+            label_x = decide_right + 0.32 * (box_left - decide_right)
+            label_y = mid_y + 0.32 * (y - mid_y)
+            label_y += 0.32 if y > mid_y else -0.32
         ax.text(
-            0.455, (0.5 + y_l) / 2, f"{name}\n$P={p_l:.2f}$", ha="center", va="center",
-            fontsize=7.5, color=C["L"],
+            label_x,
+            label_y,
+            f"$P={probability:.2f}$",
+            ha="center",
+            va="center",
+            fontsize=7.4,
+            color=edge,
+            zorder=5,
             bbox=dict(boxstyle="round,pad=0.15", facecolor="white", edgecolor="none"),
         )
-        ax.plot(0.58, y_l, "o", color=C["R"], ms=7)
-        ax.text(0.58, y_l + 0.075, "R", ha="center", fontsize=9.5, color=C["R"], fontweight="bold")
+        _outcome(ax, box_x, y, box_w, box_h, action, detail, cost, face, edge)
 
-    for name, y_leaf, (cl, cr), p in leaves:
-        y_l = 0.78 if y_leaf > 0.5 else 0.22
-        ax.plot([0.58, 0.80], [y_l, y_leaf], color=C["R"], lw=1.2)
-        ax.text(
-            0.685, (y_l + y_leaf) / 2, name, ha="center", va="center", fontsize=7.5, color=C["R"],
-            bbox=dict(boxstyle="round,pad=0.15", facecolor="white", edgecolor="none"),
-        )
-        ax.plot(0.80, y_leaf, "o", color="0.3", ms=3.5)
-        ax.text(
-            0.825, y_leaf,
-            f"$(C_L, C_R) = ({cl:.2f},\\ {cr:.2f})$\njoint probability $= {p:.2f}$",
-            va="center", fontsize=7.3, color="0.2",
-        )
-
-    ax.set_xlim(0.02, 1.16)
-    ax.set_ylim(0.0, 1.02)
+    ax.text(
+        6.1,
+        0.38,
+        "Approach  →  Anticipation  →  Yield, Continue, or Conflict  →  Resolution",
+        ha="center",
+        fontsize=6.6,
+        color="0.45",
+    )
     ax.axis("off")
-    ax.set_title("Sequential structure with estimated costs and response probabilities", pad=4)
-    save(fig, "02_game_tree.png", "Layout mock-up - treat A as strategic only if several AV scripts exist")
+    ax.set_title("Example for L: every scenario in the phase chain", pad=4)
+    save(
+        fig,
+        "02_game_tree.png",
+        "Layout mock-up, invented numbers. Paths follow the HMM mask; each scenario ends in Resolution.",
+    )
 
 
 def cost_decomposition():

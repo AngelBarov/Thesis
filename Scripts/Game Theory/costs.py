@@ -3,7 +3,8 @@
 C_i(a) = w_s S_i(a) + w_e E_i(a) + w_c K_i(a) [+ w_I I_i(a)]
 
 The component formulas in the brief are examples only, so they are supplied
-as callables rather than hard-coded here.
+as callables rather than hard-coded here. Candidate formulas and compose()
+live in cost_terms.py.
 """
 
 from __future__ import annotations

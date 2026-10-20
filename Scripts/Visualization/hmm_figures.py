@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 RNG = np.random.default_rng(23)
 
+# Same names as Scripts/HMM/phases.py.
 PHASES = ["Approach", "Anticipation", "Yield", "Continue", "Conflict", "Resolution"]
 TRANS = {
     "Approach": {"Approach": 0.86, "Anticipation": 0.14},
